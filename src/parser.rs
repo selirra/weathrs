@@ -16,9 +16,10 @@ pub struct ListElement {
     pub weather: Vec<WeatherInfo>,
     pub clouds: CloudInfo,
     pub wind: WindInfo,
-    pub visibility: u32,
+    pub visibility: Option<u32>,
     pub pop: f32,
     pub rain: Option<RainInfo>,
+    pub snow: Option<RainInfo>,
     pub sys: SysInfo,
     pub dt_txt: String,
 }
@@ -70,12 +71,14 @@ pub struct SysInfo {
 pub async fn parse_weather_info(url: &str) -> Result<ResponseRoot, Error> {
     let response = reqwest::get(url)
         .await
-        .map_err(|_| anyhow!("Connection error"))?;
+        .map_err(|e| anyhow!("Connection error: {e}"))?;
+
     let response_text = response
         .text()
         .await
-        .map_err(|_| anyhow!("Parsing error"))?;
+        .map_err(|e| anyhow!("Parsing error: {e}"))?;
+
     let response_object =
-        serde_json::from_str(&response_text).map_err(|_| anyhow!("Serialization error"))?;
+        serde_json::from_str(&response_text).map_err(|e| anyhow!("Serialization error: {e}"))?;
     Ok(response_object)
 }
